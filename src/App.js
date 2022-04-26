@@ -4,14 +4,32 @@ import { AiOutlinePlusCircle } from "react-icons/ai";
 import { BsFillMoonFill } from "react-icons/bs";
 
 import FormModal from "./components/formModal.js";
-import TodoItems from "./components/todoItems";
+import TodoItemsList from "./components/todoItems";
 import ListItems from "./components/listItems";
 
 import { Context } from "./context/store";
+import { DragDropContext } from "react-beautiful-dnd";
 
 function App() {
-  const { theme, toggleTheme } = useContext(Context);
+  const { replaceItem, theme, toggleTheme } = useContext(Context);
   const [show, setShow] = useState(false);
+
+  const handleDragEnd = (x) => {
+    console.log({ x });
+
+    const { destination, draggableId, source } = x;
+    if (!destination) {
+      return;
+    }
+    if (
+      destination.index === source.index &&
+      destination.droppableId === source.droppableId
+    ) {
+      return;
+    }
+
+    replaceItem({ destination, source, itemId: Number(draggableId) });
+  };
 
   return (
     <div className={`${theme}`}>
@@ -27,9 +45,11 @@ function App() {
         </div>
         <FormModal show={show} onClose={() => setShow(false)} />
         <div className="flex bg-gray-100 dark:bg-gray-800">
-          <TodoItems status="todo" draggableId={0} />
-          <TodoItems status="pending" draggableId={1} />
-          <TodoItems status="done" draggableId={2} />
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <TodoItemsList status="todo" droppableId="todo" />
+            <TodoItemsList status="pending" droppableId="pending" />
+            <TodoItemsList status="done" droppableId="done" />
+          </DragDropContext>
         </div>
         <ListItems />
       </div>
